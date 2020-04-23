@@ -21,6 +21,7 @@ unvisitedImg = pygame.transform.scale(pygame.image.load("media//green.png"),(10,
 startButtonImg = pygame.transform.scale(pygame.image.load("media//startButton.png"),(176,112))
 lvl1Img = pygame.transform.scale(pygame.image.load("media//lvl1.png"),(176,75))
 lvl2Img = pygame.transform.scale(pygame.image.load("media//lvl2.png"),(176,75))
+lvl3Img = pygame.transform.scale(pygame.image.load("media//lvl3.png"),(176,75))
 hpImg = pygame.transform.scale(pygame.image.load("media//lifes.png"),(50,50))
 gameOverImg = pygame.image.load("media//gameover.png")
 winnerImg = pygame.image.load("media//win.png")
@@ -168,8 +169,17 @@ def execute():
         gameDisplay.blit(lvl2Img, (310,55))
     elif level==1:
         gameDisplay.blit(lvl1Img, (310,55))
-    
-    if hp>0:
+    elif level==3:
+        while True:
+            randomRowC2 = random.choice(lista2)
+            randomColC2 = random.choice(lista2)
+            if(abs(randomRowP-randomRowC2)>75 and abs(randomColP-randomColC2)>75) and (abs(randomRowC-randomRowC2)>=150 and abs(randomColC-randomColC2)>=150):
+                break
+        computerSurf2 = gameDisplay.blit(computerImg,(randomRowC2,randomColC2))
+        gameDisplay.blit(lvl3Img, (310,55))
+    elif level==4:
+        winDisplay()
+    if(hp>0):
         for i in range(hp):
             gameDisplay.blit(hpImg, (540+(i*50),61))
     else:
@@ -188,8 +198,11 @@ def execute():
                 if(event.key==13):
                     if level==1:
                         startLvl1()
+                        
+                    elif level==2:
+                        startLvl2(30)
                     else:
-                        startLvl2()
+                        startLvl2(50)
                        
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if startSurf.collidepoint(pygame.mouse.get_pos()):
@@ -329,7 +342,7 @@ def startLvl1():
     
     execute()
     
-def startLvl2():
+def startLvl2(tickClock):
     global already,level,hp
     music=pygame.mixer.music.load("media//menu.mp3")
     pygame.mixer.music.set_volume(2)
@@ -342,7 +355,7 @@ def startLvl2():
     xcomp2 = computerSurf2.x
     ycomp2 = computerSurf2.y    
     compSpeed = 5
-    rateWin = 5
+    rateWin = 15
     orient=1
     up=False
     while not done:
@@ -379,8 +392,9 @@ def startLvl2():
             drawplayer(pos[0],pos[1])
         else:
             drawplayer(playerSurf.x,playerSurf.y)
-        if isEnd():          
-            winDisplay()
+        if isEnd():
+            level+=1
+            done=True
             
         if(xcomp>=playerSurf.x+xplayer-rateWin and xcomp<=playerSurf.x+xplayer+rateWin) and (ycomp>=playerSurf.y+yplayer-rateWin and ycomp<=playerSurf.y+yplayer+rateWin):
             hp-=1
@@ -406,29 +420,50 @@ def startLvl2():
             hp-=1
             done = True
         else:
+            rate=15
             if(xcomp2>=playerSurf.x):
                 pos=isValidMove((xcomp2-compSpeed,ycomp2),3,False)
                 if pos!=(-1,-1):
                     xcomp2-=compSpeed
+                if xcomp2>=xcomp-rate and xcomp2<=xcomp+rate and ycomp2>=ycomp-rate and ycomp2<=ycomp+rate:
+                    pos=isValidMove((xcomp2+compSpeed*2,ycomp2),3,False)
+                    if pos!=(-1,-1):
+                        xcomp2+=compSpeed*2
             else:               
                 pos=(isValidMove((xcomp2+compSpeed,ycomp2),3,False))
                 if pos!=(-1,-1):
-                    xcomp2+=compSpeed                   
+                    xcomp2+=compSpeed
+                if xcomp2>=xcomp-rate and xcomp2<=xcomp+rate and ycomp2>=ycomp-rate and ycomp2<=ycomp+rate:
+                    pos=isValidMove((xcomp2-compSpeed*2,ycomp2),3,False)
+                    if pos!=(-1,-1):
+                        xcomp2-=compSpeed*2          
             if(ycomp2>=playerSurf.y):                
                 pos=(isValidMove((xcomp2,ycomp2-compSpeed),3,False))
                 if pos!=(-1,-1):        
                     ycomp2-=compSpeed
+                if ycomp2>=ycomp-rate and ycomp2<=ycomp+rate and xcomp2>=xcomp-rate and xcomp2<=xcomp+rate:
+                    pos=isValidMove((xcomp2,ycomp2+compSpeed*2),3,False)
+                    if pos!=(-1,-1):
+                        ycomp2+=compSpeed*2                   
             else:            
                 pos=(isValidMove((xcomp2,ycomp2+compSpeed),3,False))
                 if pos!=(-1,-1):
-                    ycomp2+=compSpeed                      
+                    ycomp2+=compSpeed
+                if ycomp2>=ycomp-rate and ycomp2<=ycomp+rate and xcomp2>=xcomp-rate and xcomp2<=xcomp+rate:
+                    pos=isValidMove((xcomp2,ycomp2-compSpeed*2),3,False)
+                    if pos!=(-1,-1):
+                        ycomp2-=compSpeed*2
+                        
         gameDisplay.blit(computerImg,(xcomp,ycomp))           
         gameDisplay.blit(computerImg,(xcomp2,ycomp2))
-        gameDisplay.blit(lvl2Img, (310,55))
+        if tickClock==30:
+            gameDisplay.blit(lvl2Img, (310,55))
+        else:
+            gameDisplay.blit(lvl3Img, (310,55))
         for i in range(hp):
             gameDisplay.blit(hpImg, (540+(i*50),61))        
         pygame.display.update()
-        clock.tick(46)
+        clock.tick(tickClock)
         
     already = []
     execute()     
